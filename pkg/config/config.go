@@ -1,6 +1,11 @@
 package config
 
-import "os"
+import (
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 type Config struct {
 	DBHost      string
@@ -15,6 +20,10 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
+	if err := godotenv.Load(); err != nil {
+		log.Println("File .env tidak ditemukan, pakai env/fallback")
+	}
+
 	return &Config{
 		DBHost:      getEnv("DB_HOST"),
 		DBPort:      getEnv("DB_PORT"),
