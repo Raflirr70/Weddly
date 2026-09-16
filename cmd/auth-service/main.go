@@ -7,6 +7,7 @@ import (
 
 	authHandler "github.com/Raflirr70/Weddly/internal/auth/handler"
 	authRepository "github.com/Raflirr70/Weddly/internal/auth/repository"
+	authRoutes "github.com/Raflirr70/Weddly/internal/auth/routes"
 	authUsecase "github.com/Raflirr70/Weddly/internal/auth/usecase"
 	"github.com/Raflirr70/Weddly/pkg/config"
 	"github.com/Raflirr70/Weddly/pkg/database"
@@ -30,10 +31,7 @@ func main() {
 	handler := authHandler.NewAuthHandler(usecase)
 
 	r := gin.Default()
-	api := r.Group("/api/v1")
-	{
-		api.POST("/login", handler.Login)
-	}
+	authRoutes.NewAuthRoutes(handler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))
 
 	log.Println("auth-service running on :8081")
 	if err := r.Run(":8081"); err != nil {
