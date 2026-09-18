@@ -4,6 +4,7 @@ import "time"
 
 type InvitationDetailResponse struct {
 	ID             uint                      `json:"id"`
+	UserID         uint                      `json:"-"`
 	BrideName      string                    `json:"brideName"`
 	BrideDegree    string                    `json:"brideDegree"`
 	GroomName      string                    `json:"groomName"`
@@ -61,6 +62,8 @@ type GiftResponse struct {
 }
 
 type CommentResponse struct {
+	InvitationID     uint      `json:"-"`
+	UserID           uint      `json:"-"`
 	Username         string    `json:"username"`
 	Comment          string    `json:"comment"`
 	ConfirmAttendant bool      `json:"confirmAttendant"`

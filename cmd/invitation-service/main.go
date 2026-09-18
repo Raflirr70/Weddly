@@ -11,6 +11,7 @@ import (
 	invitationUsecase "github.com/Raflirr70/Weddly/internal/invitation/usecase"
 	"github.com/Raflirr70/Weddly/pkg/config"
 	"github.com/Raflirr70/Weddly/pkg/database"
+	"github.com/Raflirr70/Weddly/pkg/kafka"
 )
 
 func main() {
@@ -28,7 +29,8 @@ func main() {
 
 	repo := invitationRepository.NewInvitationRepository(db)
 	usecase := invitationUsecase.NewInvitationUsecase(repo)
-	handler := invitationHandler.NewInvitationHandler(usecase)
+	producer := kafka.NewProducer(cfg.KafkaBroker)
+	handler := invitationHandler.NewInvitationHandler(usecase, producer)
 
 	r := gin.Default()
 	invitationRoutes.NewInvitationRoutes(handler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))

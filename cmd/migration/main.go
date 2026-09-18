@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	invitationRepository "github.com/Raflirr70/Weddly/internal/invitation/repository"
+	notificationRepository "github.com/Raflirr70/Weddly/internal/notification/repository"
 	"github.com/Raflirr70/Weddly/internal/user/entity"
 	userRepository "github.com/Raflirr70/Weddly/internal/user/repository"
 	"github.com/Raflirr70/Weddly/pkg/config"
@@ -30,6 +31,12 @@ func main() {
 	invitationRepo := invitationRepository.NewInvitationRepository(db)
 	if err := invitationRepo.Migrate(); err != nil {
 		log.Fatal("Invitation migrate failed:", err)
+	}
+
+	// 1c. Migrate: buat tabel log & aktivitas
+	notificationRepo := notificationRepository.NewNotificationRepository(db)
+	if err := notificationRepo.Migrate(); err != nil {
+		log.Fatal("Notification migrate failed:", err)
 	}
 
 	// 2. Seed: isi superadmin default kalau belum ada

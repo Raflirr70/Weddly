@@ -1,24 +1,40 @@
 package handler
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/Raflirr70/Weddly/internal/invitation/entity"
 	"github.com/Raflirr70/Weddly/internal/invitation/usecase"
 	"github.com/Raflirr70/Weddly/pkg/apperror"
+	"github.com/Raflirr70/Weddly/pkg/kafka"
 	"github.com/Raflirr70/Weddly/pkg/middleware"
 	"github.com/Raflirr70/Weddly/pkg/response"
 )
 
 type InvitationHandler struct {
-	usecase *usecase.InvitationUsecase
+	usecase  *usecase.InvitationUsecase
+	producer *kafka.Producer
 }
 
-func NewInvitationHandler(usecase *usecase.InvitationUsecase) *InvitationHandler {
-	return &InvitationHandler{usecase: usecase}
+func NewInvitationHandler(usecase *usecase.InvitationUsecase, producer *kafka.Producer) *InvitationHandler {
+	return &InvitationHandler{usecase: usecase, producer: producer}
+}
+
+func publish(ctx context.Context, p *kafka.Producer, topic, key string, value interface{}, errKey string) {
+	if p == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	if err := p.Publish(ctx, topic, key, value); err != nil {
+		log.Println(errKey, err)
+	}
 }
 
 func currentUserID(c *gin.Context) uint {
@@ -373,6 +389,16 @@ func (h *InvitationHandler) GetInvitation(c *gin.Context) {
 		h.fail(c, appErr)
 		return
 	}
+	go publish(context.Background(), h.producer, kafka.TopicVisitorLog,
+		strconv.FormatUint(uint64(result.ID), 10),
+		kafka.VisitorLogEvent{
+			InvitationID: result.ID,
+			UserID:       result.UserID,
+			IPAddress:    c.ClientIP(),
+			UserAgent:    c.GetHeader("User-Agent"),
+			VisitedAt:    time.Now(),
+		},
+		"publish visitor-log:")
 	success(c, result)
 }
 
@@ -403,5 +429,16 @@ func (h *InvitationHandler) CreateComment(c *gin.Context) {
 		h.fail(c, appErr)
 		return
 	}
+	go publish(context.Background(), h.producer, kafka.TopicComment,
+		strconv.FormatUint(uint64(result.InvitationID), 10),
+		kafka.CommentCreatedEvent{
+			InvitationID:     result.InvitationID,
+			UserID:           result.UserID,
+			Username:         result.Username,
+			Comment:          result.Comment,
+			ConfirmAttendant: result.ConfirmAttendant,
+			CreatedAt:        result.CreatedAt,
+		},
+		"publish comment-created:")
 	success(c, result)
 }

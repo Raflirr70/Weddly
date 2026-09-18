@@ -381,6 +381,7 @@ func (u *InvitationUsecase) GetInvitation(id uint) (*entity.InvitationDetailResp
 
 	resp := entity.InvitationDetailResponse{
 		ID:             inv.ID,
+		UserID:         inv.UserID,
 		BrideName:      inv.BrideName,
 		BrideDegree:    inv.BrideDegree,
 		GroomName:      inv.GroomName,
@@ -478,6 +479,8 @@ func (u *InvitationUsecase) CreateComment(id uint, req entity.CommentRequest) (*
 		return nil, apperror.Internal("Failed to create comment")
 	}
 	return &entity.CommentResponse{
+		InvitationID:     inv.ID,
+		UserID:           inv.UserID,
 		Username:         comment.Username,
 		Comment:          comment.Comment,
 		ConfirmAttendant: comment.ConfirmAttendant,
