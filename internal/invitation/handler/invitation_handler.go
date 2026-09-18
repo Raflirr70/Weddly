@@ -360,3 +360,48 @@ func (h *InvitationHandler) DeleteGift(c *gin.Context) {
 	}
 	deleted(c)
 }
+
+// ---------- Public Guest ----------
+
+func (h *InvitationHandler) GetInvitation(c *gin.Context) {
+	id, ok := h.paramID(c)
+	if !ok {
+		return
+	}
+	result, appErr := h.usecase.GetInvitation(id)
+	if appErr != nil {
+		h.fail(c, appErr)
+		return
+	}
+	success(c, result)
+}
+
+func (h *InvitationHandler) GetComments(c *gin.Context) {
+	id, ok := h.paramID(c)
+	if !ok {
+		return
+	}
+	result, appErr := h.usecase.GetComments(id)
+	if appErr != nil {
+		h.fail(c, appErr)
+		return
+	}
+	success(c, result)
+}
+
+func (h *InvitationHandler) CreateComment(c *gin.Context) {
+	id, ok := h.paramID(c)
+	if !ok {
+		return
+	}
+	var req entity.CommentRequest
+	if !h.bind(c, "Comment Bad Request", &req) {
+		return
+	}
+	result, appErr := h.usecase.CreateComment(id, req)
+	if appErr != nil {
+		h.fail(c, appErr)
+		return
+	}
+	success(c, result)
+}

@@ -54,4 +54,11 @@ func (r *InvitationRoutes) Register(api *gin.RouterGroup) {
 		secured.PUT("/gift/:id", r.handler.UpdateGift)
 		secured.DELETE("/gift/:id", r.handler.DeleteGift)
 	}
+
+	public := api.Group("")
+	{
+		public.GET("/invitation/:id", r.handler.GetInvitation)
+		public.GET("/invitation/:id/comments", r.handler.GetComments)
+		public.POST("/invitation/:id/comment", r.handler.CreateComment)
+	}
 }

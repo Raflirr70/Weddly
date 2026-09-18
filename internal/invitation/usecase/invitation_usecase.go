@@ -350,3 +350,137 @@ func (u *InvitationUsecase) DeleteGift(userID, id uint) *apperror.AppError {
 	}
 	return nil
 }
+
+// ---------- Public Guest ----------
+
+// ponytail: sectionOrder/sectionEnabled masih default semua on; nanti dari kolom JSON (Step 10 belum pakai).
+var sectionOrder = []string{"opening", "invitation", "eventTime", "galery", "storySection", "gift"}
+
+func sectionEnabled() map[string]bool {
+	m := make(map[string]bool, len(sectionOrder))
+	for _, s := range sectionOrder {
+		m[s] = true
+	}
+	return m
+}
+
+func (u *InvitationUsecase) GetInvitation(id uint) (*entity.InvitationDetailResponse, *apperror.AppError) {
+	inv, err := u.repo.FindInvitationByID(id)
+	if err != nil {
+		return nil, mapRepoErr(err, "Invitation Not Found")
+	}
+	uid := inv.UserID
+
+	cover, _ := u.repo.FindCoverByUserID(uid)
+	hero, _ := u.repo.FindHeroByUserID(uid)
+	opening, _ := u.repo.FindOpeningByUserID(uid)
+	events, _ := u.repo.FindEventsByUserID(uid)
+	galleries, _ := u.repo.FindGalleriesByUserID(uid)
+	stories, _ := u.repo.FindStoriesByUserID(uid)
+	gifts, _ := u.repo.FindGiftsByUserID(uid)
+
+	resp := entity.InvitationDetailResponse{
+		ID:             inv.ID,
+		BrideName:      inv.BrideName,
+		BrideDegree:    inv.BrideDegree,
+		GroomName:      inv.GroomName,
+		GroomDegree:    inv.GroomDegree,
+		SectionOrder:   sectionOrder,
+		SectionEnabled: sectionEnabled(),
+		Invitation: entity.InvitationSectionResponse{
+			GroomImgUrl:      inv.GroomImgUrl,
+			BrideImgUrl:      inv.BrideImgUrl,
+			Title:            inv.Title,
+			Description:      inv.Description,
+			GroomDescription: inv.GroomDescription,
+			BrideDescription: inv.BrideDescription,
+		},
+	}
+
+	if cover != nil {
+		resp.CoverUrl = cover.CoverUrl
+	}
+	if hero != nil {
+		resp.HeroImgUrl = hero.HeroImgUrl
+	}
+	if opening != nil {
+		resp.Opening = entity.OpeningResponse{
+			OpeningImageUrl: opening.OpeningImgUrl,
+			Title:           opening.Title,
+			Description:     opening.Description,
+		}
+	}
+	for _, e := range events {
+		resp.EventTime = append(resp.EventTime, entity.EventResponse{
+			Title:        e.Title,
+			Location:     e.Location,
+			StartDate:    e.StartDate,
+			EndDate:      e.EndDate,
+			LocationLink: e.LocationLink,
+		})
+	}
+	for _, g := range galleries {
+		resp.Galery = append(resp.Galery, g.ImageUrl)
+	}
+	if len(stories) > 0 {
+		resp.StorySection.StoryImgUrl = stories[0].StoryImgUrl
+	}
+	for _, s := range stories {
+		resp.StorySection.Story = append(resp.StorySection.Story, entity.StoryEntry{
+			Title:       s.Title,
+			Description: s.Description,
+		})
+	}
+	for _, g := range gifts {
+		resp.Gift = append(resp.Gift, entity.GiftResponse{
+			Provider:        g.Provider,
+			ProviderAccount: g.ProviderAccount,
+			Type:            g.Type,
+			No:              g.No,
+		})
+	}
+	return &resp, nil
+}
+
+func (u *InvitationUsecase) GetComments(id uint) ([]entity.CommentResponse, *apperror.AppError) {
+	inv, err := u.repo.FindInvitationByID(id)
+	if err != nil {
+		return nil, mapRepoErr(err, "Invitation Not Found")
+	}
+	comments, err := u.repo.FindCommentsByUserID(inv.UserID)
+	if err != nil {
+		return nil, apperror.Internal("Failed to list comments")
+	}
+	result := make([]entity.CommentResponse, 0, len(comments))
+	for _, c := range comments {
+		result = append(result, entity.CommentResponse{
+			Username:         c.Username,
+			Comment:          c.Comment,
+			ConfirmAttendant: c.ConfirmAttendant,
+			CreatedAt:        c.CreatedAt,
+		})
+	}
+	return result, nil
+}
+
+func (u *InvitationUsecase) CreateComment(id uint, req entity.CommentRequest) (*entity.CommentResponse, *apperror.AppError) {
+	inv, err := u.repo.FindInvitationByID(id)
+	if err != nil {
+		return nil, mapRepoErr(err, "Invitation Not Found")
+	}
+	comment := entity.Comment{
+		UserID:           inv.UserID,
+		Username:         req.Username,
+		Comment:          req.Comment,
+		ConfirmAttendant: req.ConfirmAttendant,
+	}
+	if err := u.repo.CreateComment(&comment); err != nil {
+		return nil, apperror.Internal("Failed to create comment")
+	}
+	return &entity.CommentResponse{
+		Username:         comment.Username,
+		Comment:          comment.Comment,
+		ConfirmAttendant: comment.ConfirmAttendant,
+		CreatedAt:        comment.CreatedAt,
+	}, nil
+}
