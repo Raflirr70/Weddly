@@ -9,6 +9,10 @@ import (
 	authRepository "github.com/Raflirr70/Weddly/internal/auth/repository"
 	authRoutes "github.com/Raflirr70/Weddly/internal/auth/routes"
 	authUsecase "github.com/Raflirr70/Weddly/internal/auth/usecase"
+	notificationHandler "github.com/Raflirr70/Weddly/internal/notification/handler"
+	notificationRepository "github.com/Raflirr70/Weddly/internal/notification/repository"
+	notificationRoutes "github.com/Raflirr70/Weddly/internal/notification/routes"
+	notificationUsecase "github.com/Raflirr70/Weddly/internal/notification/usecase"
 	userHandler "github.com/Raflirr70/Weddly/internal/user/handler"
 	userRepository "github.com/Raflirr70/Weddly/internal/user/repository"
 	userRoutes "github.com/Raflirr70/Weddly/internal/user/routes"
@@ -38,9 +42,14 @@ func main() {
 	userUsecase := userUsecase.NewUserUsecase(userRepo)
 	userHandler := userHandler.NewUserHandler(userUsecase)
 
+	notificationRepo := notificationRepository.NewNotificationRepository(db)
+	notificationUsecase := notificationUsecase.NewNotificationUsecase(notificationRepo)
+	notificationHandler := notificationHandler.NewNotificationHandler(notificationUsecase)
+
 	r := gin.Default()
 	authRoutes.NewAuthRoutes(handler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))
 	userRoutes.NewUserRoutes(userHandler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))
+	notificationRoutes.NewNotificationRoutes(notificationHandler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))
 
 	log.Println("auth-service running on :8081")
 	if err := r.Run(":8081"); err != nil {

@@ -17,3 +17,9 @@ type ActivityLog struct {
 	Detail    string    `json:"detail"`
 	CreatedAt time.Time `json:"createdAt"`
 }
+
+type VisitorStat struct {
+	InvitationID  uint      `json:"invitationId"`
+	VisitCount    int64     `json:"visitCount"`
+	LastVisitedAt time.Time `json:"lastVisitedAt"`
+}
