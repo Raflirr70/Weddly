@@ -9,6 +9,10 @@ import (
 	authRepository "github.com/Raflirr70/Weddly/internal/auth/repository"
 	authRoutes "github.com/Raflirr70/Weddly/internal/auth/routes"
 	authUsecase "github.com/Raflirr70/Weddly/internal/auth/usecase"
+	userHandler "github.com/Raflirr70/Weddly/internal/user/handler"
+	userRepository "github.com/Raflirr70/Weddly/internal/user/repository"
+	userRoutes "github.com/Raflirr70/Weddly/internal/user/routes"
+	userUsecase "github.com/Raflirr70/Weddly/internal/user/usecase"
 	"github.com/Raflirr70/Weddly/pkg/config"
 	"github.com/Raflirr70/Weddly/pkg/database"
 )
@@ -30,8 +34,13 @@ func main() {
 	usecase := authUsecase.NewAuthUsecase(repo, cfg.JWTSecret)
 	handler := authHandler.NewAuthHandler(usecase)
 
+	userRepo := userRepository.NewUserRepository(db)
+	userUsecase := userUsecase.NewUserUsecase(userRepo)
+	userHandler := userHandler.NewUserHandler(userUsecase)
+
 	r := gin.Default()
 	authRoutes.NewAuthRoutes(handler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))
+	userRoutes.NewUserRoutes(userHandler, redisClient, cfg.JWTSecret).Register(r.Group("/api/v1"))
 
 	log.Println("auth-service running on :8081")
 	if err := r.Run(":8081"); err != nil {

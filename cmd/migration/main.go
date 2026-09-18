@@ -5,6 +5,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
+	invitationEntity "github.com/Raflirr70/Weddly/internal/invitation/entity"
 	"github.com/Raflirr70/Weddly/internal/user/entity"
 	"github.com/Raflirr70/Weddly/internal/user/repository"
 	"github.com/Raflirr70/Weddly/pkg/config"
@@ -20,15 +21,31 @@ func main() {
 	}
 
 	// 1. Migrate: buat tabel users
-	if err := repository.Migrate(db); err != nil {
+	userRepo := repository.NewUserRepository(db)
+	if err := userRepo.Migrate(); err != nil {
 		log.Fatal("Migrate failed:", err)
+	}
+
+	// 1b. Migrate: buat tabel-tabel undangan
+	if err := db.AutoMigrate(
+		&invitationEntity.Cover{},
+		&invitationEntity.Hero{},
+		&invitationEntity.Opening{},
+		&invitationEntity.Invitation{},
+		&invitationEntity.Event{},
+		&invitationEntity.Gallery{},
+		&invitationEntity.Story{},
+		&invitationEntity.Gift{},
+		&invitationEntity.Comment{},
+	); err != nil {
+		log.Fatal("Invitation migrate failed:", err)
 	}
 
 	// 2. Seed: isi superadmin default kalau belum ada
 	username := "admin"
 	password := "admin123"
 
-	existing, err := repository.FindByUsername(db, username)
+	existing, err := userRepo.FindByUsername(username)
 	if err == nil && existing != nil {
 		log.Println("Superadmin sudah ada, tidak perlu seed ulang.")
 		return

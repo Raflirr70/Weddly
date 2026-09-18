@@ -26,11 +26,7 @@ func (r *AuthRoutes) Register(api *gin.RouterGroup) {
 
 	secured := api.Group("")
 	secured.Use(middleware.AuthMiddleware(r.redis, r.jwtSecret))
-	{
-		// ponytail: route test middleware, diganti route user CRUD di Step 6.
-		secured.GET("/me", me)
-		secured.GET("/superadmin", middleware.RoleMiddleware("superadmin"), superadminOnly)
-	}
+	secured.GET("/me", me)
 }
 
 func me(c *gin.Context) {
@@ -38,8 +34,4 @@ func me(c *gin.Context) {
 		"userId": c.GetUint(middleware.ContextUserID),
 		"role":   c.GetString(middleware.ContextRole),
 	}))
-}
-
-func superadminOnly(c *gin.Context) {
-	c.JSON(http.StatusOK, response.Success(200, "ok", gin.H{"ok": true}))
 }

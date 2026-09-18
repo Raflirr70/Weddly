@@ -11,3 +11,33 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+type CreateUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Role     string `json:"role"`
+}
+
+type UpdateUserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}
+
+type UserResponse struct {
+	ID        uint      `json:"id"`
+	Username  string    `json:"username"`
+	Role      string    `json:"role"`
+	Status    bool      `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+func ToUserResponse(u *User) UserResponse {
+	return UserResponse{
+		ID:        u.ID,
+		Username:  u.Username,
+		Role:      u.Role,
+		Status:    u.Status,
+		CreatedAt: u.CreatedAt,
+	}
+}
