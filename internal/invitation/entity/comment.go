@@ -4,7 +4,7 @@ import "time"
 
 type Comment struct {
 	ID               uint      `json:"id" gorm:"primaryKey"`
-	UserID           uint      `json:"userId"`
+	UserID           uint      `json:"userId" gorm:"index"`
 	Username         string    `json:"username"`
 	Comment          string    `json:"comment"`
 	ConfirmAttendant bool      `json:"confirmAttendant"`

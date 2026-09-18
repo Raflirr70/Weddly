@@ -2,7 +2,7 @@ package entity
 
 type Invitation struct {
 	ID               uint   `json:"id" gorm:"primaryKey"`
-	UserID           uint   `json:"userId" gorm:"not null"`
+	UserID           uint   `json:"userId" gorm:"not null;index"`
 	BrideName        string `json:"brideName"`
 	BrideDegree      string `json:"brideDegree"`
 	GroomName        string `json:"groomName"`

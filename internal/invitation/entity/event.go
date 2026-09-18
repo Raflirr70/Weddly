@@ -4,7 +4,7 @@ import "time"
 
 type Event struct {
 	ID           uint      `json:"id" gorm:"primaryKey"`
-	UserID       uint      `json:"userId" gorm:"not null"`
+	UserID       uint      `json:"userId" gorm:"not null;index"`
 	Title        string    `json:"title"`
 	Location     string    `json:"location"`
 	StartDate    time.Time `json:"startDate"`
