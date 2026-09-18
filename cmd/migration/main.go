@@ -5,9 +5,9 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	invitationEntity "github.com/Raflirr70/Weddly/internal/invitation/entity"
+	invitationRepository "github.com/Raflirr70/Weddly/internal/invitation/repository"
 	"github.com/Raflirr70/Weddly/internal/user/entity"
-	"github.com/Raflirr70/Weddly/internal/user/repository"
+	userRepository "github.com/Raflirr70/Weddly/internal/user/repository"
 	"github.com/Raflirr70/Weddly/pkg/config"
 	"github.com/Raflirr70/Weddly/pkg/database"
 )
@@ -21,23 +21,14 @@ func main() {
 	}
 
 	// 1. Migrate: buat tabel users
-	userRepo := repository.NewUserRepository(db)
+	userRepo := userRepository.NewUserRepository(db)
 	if err := userRepo.Migrate(); err != nil {
 		log.Fatal("Migrate failed:", err)
 	}
 
 	// 1b. Migrate: buat tabel-tabel undangan
-	if err := db.AutoMigrate(
-		&invitationEntity.Cover{},
-		&invitationEntity.Hero{},
-		&invitationEntity.Opening{},
-		&invitationEntity.Invitation{},
-		&invitationEntity.Event{},
-		&invitationEntity.Gallery{},
-		&invitationEntity.Story{},
-		&invitationEntity.Gift{},
-		&invitationEntity.Comment{},
-	); err != nil {
+	invitationRepo := invitationRepository.NewInvitationRepository(db)
+	if err := invitationRepo.Migrate(); err != nil {
 		log.Fatal("Invitation migrate failed:", err)
 	}
 
