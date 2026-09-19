@@ -1,7 +1,6 @@
 package entity
 
 type Gallery struct {
-	ID       uint   `json:"id" gorm:"primaryKey"`
-	UserID   uint   `json:"userId" gorm:"not null;index"`
+	Order    int    `json:"order"`
 	ImageUrl string `json:"imageUrl"`
 }

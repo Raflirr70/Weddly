@@ -1,8 +1,7 @@
 package entity
 
 type Story struct {
-	ID          uint   `json:"id" gorm:"primaryKey"`
-	UserID      uint   `json:"userId" gorm:"not null;index"`
+	Order       int    `json:"order"`
 	StoryImgUrl string `json:"storyImgUrl"`
 	Title       string `json:"title"`
 	Description string `json:"description"`

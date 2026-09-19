@@ -29,7 +29,8 @@ type InvitationRequest struct {
 	BrideDescription string `json:"brideDescription"`
 }
 
-type EventRequest struct {
+type EventEntryRequest struct {
+	Order        int       `json:"order"`
 	Title        string    `json:"title" binding:"required"`
 	Location     string    `json:"location"`
 	StartDate    time.Time `json:"startDate"`
@@ -37,19 +38,39 @@ type EventRequest struct {
 	LocationLink string    `json:"locationLink"`
 }
 
-type GalleryRequest struct {
+type EventRequest struct {
+	Title  string              `json:"title"`
+	Events []EventEntryRequest `json:"events"`
+}
+
+type GalleryEntryRequest struct {
+	Order    int    `json:"order"`
 	ImageUrl string `json:"imageUrl" binding:"required"`
 }
 
-type StoryRequest struct {
-	StoryImgUrl string `json:"storyImgUrl"`
+type GalleryRequest struct {
+	Galleries []GalleryEntryRequest `json:"galleries"`
+}
+
+type StoryEntryRequest struct {
+	Order       int    `json:"order"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
-type GiftRequest struct {
+type StoryRequest struct {
+	StoryImgUrl string              `json:"storyImgUrl"`
+	Stories     []StoryEntryRequest `json:"stories"`
+}
+
+type GiftEntryRequest struct {
+	Order           int    `json:"order"`
 	Provider        string `json:"provider"`
 	ProviderAccount string `json:"providerAccount"`
 	Type            string `json:"type"`
 	No              string `json:"no"`
+}
+
+type GiftRequest struct {
+	Gifts []GiftEntryRequest `json:"gifts"`
 }

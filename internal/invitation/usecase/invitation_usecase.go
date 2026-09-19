@@ -29,120 +29,151 @@ func forbidden() *apperror.AppError {
 	return apperror.Forbidden("Forbidden")
 }
 
+func (u *InvitationUsecase) invitationByUserID(userID uint) (*entity.Invitation, *apperror.AppError) {
+	inv, err := u.repo.FindInvitationByUserID(userID)
+	if err != nil {
+		return nil, mapRepoErr(err, "Invitation Not Found")
+	}
+	ensureSections(&inv.Sections)
+	return inv, nil
+}
+
+func (u *InvitationUsecase) checkOwner(userID, invitationID uint) *apperror.AppError {
+	inv, err := u.repo.FindInvitationByID(invitationID)
+	if err != nil {
+		return mapRepoErr(err, "Invitation Not Found")
+	}
+	if inv.UserID != userID {
+		return forbidden()
+	}
+	return nil
+}
+
+// ponytail: sectionOrder/sectionEnabled default semua on; keseluruhan tersimpan di kolom JSON Sections.
+var sectionOrder = []string{"opening", "invitation", "eventTime", "galery", "storySection", "gift"}
+
+func ensureSections(s *entity.InvitationSections) {
+	if s.SectionOrder == nil {
+		s.SectionOrder = append([]string{}, sectionOrder...)
+	}
+	if s.SectionEnabled == nil {
+		s.SectionEnabled = make(map[string]bool, len(sectionOrder))
+		for _, name := range sectionOrder {
+			s.SectionEnabled[name] = true
+		}
+	}
+}
+
+func (u *InvitationUsecase) save(inv *entity.Invitation, invalidMsg string) *apperror.AppError {
+	if err := u.repo.UpdateInvitation(inv); err != nil {
+		return apperror.Internal(invalidMsg)
+	}
+	return nil
+}
+
 // ---------- Cover ----------
 
 func (u *InvitationUsecase) CreateCover(userID uint, req entity.CoverRequest) (*entity.Cover, *apperror.AppError) {
-	cover := entity.Cover{UserID: userID, CoverUrl: req.CoverUrl}
-	if err := u.repo.CreateCover(&cover); err != nil {
-		return nil, apperror.Internal("Failed to create cover")
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
-	return &cover, nil
+	inv.Sections.CoverUrl = req.CoverUrl
+	if appErr := u.save(inv, "Failed to save cover"); appErr != nil {
+		return nil, appErr
+	}
+	return &entity.Cover{CoverUrl: inv.Sections.CoverUrl}, nil
 }
 
-func (u *InvitationUsecase) DeleteCover(userID, id uint) *apperror.AppError {
-	cover, err := u.repo.FindCoverByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Cover Not Found")
+func (u *InvitationUsecase) DeleteCover(userID uint) *apperror.AppError {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return appErr
 	}
-	if cover.UserID != userID {
-		return forbidden()
-	}
-	if err := u.repo.DeleteCover(id); err != nil {
-		return apperror.Internal("Failed to delete cover")
-	}
-	return nil
+	inv.Sections.CoverUrl = ""
+	return u.save(inv, "Failed to delete cover")
 }
 
 // ---------- Hero ----------
 
 func (u *InvitationUsecase) CreateHero(userID uint, req entity.HeroRequest) (*entity.Hero, *apperror.AppError) {
-	hero := entity.Hero{UserID: userID, HeroImgUrl: req.HeroImgUrl}
-	if err := u.repo.CreateHero(&hero); err != nil {
-		return nil, apperror.Internal("Failed to create hero")
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
-	return &hero, nil
+	inv.Sections.HeroImgUrl = req.HeroImgUrl
+	if appErr := u.save(inv, "Failed to save hero"); appErr != nil {
+		return nil, appErr
+	}
+	return &entity.Hero{HeroImgUrl: inv.Sections.HeroImgUrl}, nil
 }
 
-func (u *InvitationUsecase) DeleteHero(userID, id uint) *apperror.AppError {
-	hero, err := u.repo.FindHeroByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Hero Not Found")
+func (u *InvitationUsecase) DeleteHero(userID uint) *apperror.AppError {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return appErr
 	}
-	if hero.UserID != userID {
-		return forbidden()
-	}
-	if err := u.repo.DeleteHero(id); err != nil {
-		return apperror.Internal("Failed to delete hero")
-	}
-	return nil
+	inv.Sections.HeroImgUrl = ""
+	return u.save(inv, "Failed to delete hero")
 }
 
 // ---------- Opening ----------
 
 func (u *InvitationUsecase) CreateOpening(userID uint, req entity.OpeningRequest) (*entity.Opening, *apperror.AppError) {
-	opening := entity.Opening{
-		UserID:        userID,
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	inv.Sections.Opening = entity.Opening{
 		OpeningImgUrl: req.OpeningImgUrl,
 		Title:         req.Title,
 		Description:   req.Description,
 	}
-	if err := u.repo.CreateOpening(&opening); err != nil {
-		return nil, apperror.Internal("Failed to create opening")
+	if appErr := u.save(inv, "Failed to save opening"); appErr != nil {
+		return nil, appErr
 	}
+	opening := inv.Sections.Opening
 	return &opening, nil
 }
 
-func (u *InvitationUsecase) UpdateOpening(userID, id uint, req entity.OpeningRequest) (*entity.Opening, *apperror.AppError) {
-	opening, err := u.repo.FindOpeningByID(id)
-	if err != nil {
-		return nil, mapRepoErr(err, "Opening Not Found")
+func (u *InvitationUsecase) DeleteOpening(userID uint) *apperror.AppError {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return appErr
 	}
-	if opening.UserID != userID {
-		return nil, forbidden()
-	}
-	opening.OpeningImgUrl = req.OpeningImgUrl
-	opening.Title = req.Title
-	opening.Description = req.Description
-	if err := u.repo.UpdateOpening(opening); err != nil {
-		return nil, apperror.Internal("Failed to update opening")
-	}
-	return opening, nil
-}
-
-func (u *InvitationUsecase) DeleteOpening(userID, id uint) *apperror.AppError {
-	opening, err := u.repo.FindOpeningByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Opening Not Found")
-	}
-	if opening.UserID != userID {
-		return forbidden()
-	}
-	if err := u.repo.DeleteOpening(id); err != nil {
-		return apperror.Internal("Failed to delete opening")
-	}
-	return nil
+	inv.Sections.Opening = entity.Opening{}
+	return u.save(inv, "Failed to delete opening")
 }
 
 // ---------- Invitation ----------
 
 func (u *InvitationUsecase) CreateInvitation(userID uint, req entity.InvitationRequest) (*entity.Invitation, *apperror.AppError) {
-	inv := entity.Invitation{
-		UserID:           userID,
-		BrideName:        req.BrideName,
-		BrideDegree:      req.BrideDegree,
-		GroomName:        req.GroomName,
-		GroomDegree:      req.GroomDegree,
-		GroomImgUrl:      req.GroomImgUrl,
-		BrideImgUrl:      req.BrideImgUrl,
-		Title:            req.Title,
-		Description:      req.Description,
-		GroomDescription: req.GroomDescription,
-		BrideDescription: req.BrideDescription,
+	inv, err := u.repo.FindInvitationByUserID(userID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, apperror.Internal("Failed to get invitation")
 	}
-	if err := u.repo.CreateInvitation(&inv); err != nil {
-		return nil, apperror.Internal("Failed to create invitation")
+	create := err != nil
+	if create {
+		inv = &entity.Invitation{UserID: userID}
 	}
-	return &inv, nil
+	inv.BrideName = req.BrideName
+	inv.BrideDegree = req.BrideDegree
+	inv.GroomName = req.GroomName
+	inv.GroomDegree = req.GroomDegree
+	inv.GroomImgUrl = req.GroomImgUrl
+	inv.BrideImgUrl = req.BrideImgUrl
+	inv.Title = req.Title
+	inv.Description = req.Description
+	inv.GroomDescription = req.GroomDescription
+	inv.BrideDescription = req.BrideDescription
+	if create {
+		if err := u.repo.CreateInvitation(inv); err != nil {
+			return nil, apperror.Internal("Failed to create invitation")
+		}
+	} else if err := u.repo.UpdateInvitation(inv); err != nil {
+		return nil, apperror.Internal("Failed to update invitation")
+	}
+	return inv, nil
 }
 
 func (u *InvitationUsecase) UpdateInvitation(userID, id uint, req entity.InvitationRequest) (*entity.Invitation, *apperror.AppError) {
@@ -185,199 +216,103 @@ func (u *InvitationUsecase) DeleteInvitation(userID, id uint) *apperror.AppError
 
 // ---------- Event ----------
 
-func (u *InvitationUsecase) CreateEvent(userID uint, req entity.EventRequest) (*entity.Event, *apperror.AppError) {
-	event := entity.Event{
-		UserID:       userID,
-		Title:        req.Title,
-		Location:     req.Location,
-		StartDate:    req.StartDate,
-		EndDate:      req.EndDate,
-		LocationLink: req.LocationLink,
+func (u *InvitationUsecase) CreateEvent(userID uint, req entity.EventRequest) ([]entity.Event, *apperror.AppError) {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
-	if err := u.repo.CreateEvent(&event); err != nil {
-		return nil, apperror.Internal("Failed to create event")
+	inv.Title = req.Title
+	events := make([]entity.Event, 0, len(req.Events))
+	for _, e := range req.Events {
+		events = append(events, entity.Event{
+			Order:        e.Order,
+			Title:        e.Title,
+			Location:     e.Location,
+			StartDate:    e.StartDate,
+			EndDate:      e.EndDate,
+			LocationLink: e.LocationLink,
+		})
 	}
-	return &event, nil
-}
-
-func (u *InvitationUsecase) UpdateEvent(userID, id uint, req entity.EventRequest) (*entity.Event, *apperror.AppError) {
-	event, err := u.repo.FindEventByID(id)
-	if err != nil {
-		return nil, mapRepoErr(err, "Event Not Found")
+	inv.Sections.Events = events
+	if appErr := u.save(inv, "Failed to save event"); appErr != nil {
+		return nil, appErr
 	}
-	if event.UserID != userID {
-		return nil, forbidden()
-	}
-	event.Title = req.Title
-	event.Location = req.Location
-	event.StartDate = req.StartDate
-	event.EndDate = req.EndDate
-	event.LocationLink = req.LocationLink
-	if err := u.repo.UpdateEvent(event); err != nil {
-		return nil, apperror.Internal("Failed to update event")
-	}
-	return event, nil
-}
-
-func (u *InvitationUsecase) DeleteEvent(userID, id uint) *apperror.AppError {
-	event, err := u.repo.FindEventByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Event Not Found")
-	}
-	if event.UserID != userID {
-		return forbidden()
-	}
-	if err := u.repo.DeleteEvent(id); err != nil {
-		return apperror.Internal("Failed to delete event")
-	}
-	return nil
+	return events, nil
 }
 
 // ---------- Gallery ----------
 
-func (u *InvitationUsecase) CreateGallery(userID uint, req entity.GalleryRequest) (*entity.Gallery, *apperror.AppError) {
-	gallery := entity.Gallery{UserID: userID, ImageUrl: req.ImageUrl}
-	if err := u.repo.CreateGallery(&gallery); err != nil {
-		return nil, apperror.Internal("Failed to create gallery")
+func (u *InvitationUsecase) CreateGallery(userID uint, req entity.GalleryRequest) ([]entity.Gallery, *apperror.AppError) {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
-	return &gallery, nil
-}
-
-func (u *InvitationUsecase) DeleteGallery(userID, id uint) *apperror.AppError {
-	gallery, err := u.repo.FindGalleryByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Gallery Not Found")
+	galleries := make([]entity.Gallery, 0, len(req.Galleries))
+	for _, g := range req.Galleries {
+		galleries = append(galleries, entity.Gallery{Order: g.Order, ImageUrl: g.ImageUrl})
 	}
-	if gallery.UserID != userID {
-		return forbidden()
+	inv.Sections.Galleries = galleries
+	if appErr := u.save(inv, "Failed to save gallery"); appErr != nil {
+		return nil, appErr
 	}
-	if err := u.repo.DeleteGallery(id); err != nil {
-		return apperror.Internal("Failed to delete gallery")
-	}
-	return nil
+	return galleries, nil
 }
 
 // ---------- Story ----------
 
-func (u *InvitationUsecase) CreateStory(userID uint, req entity.StoryRequest) (*entity.Story, *apperror.AppError) {
-	story := entity.Story{
-		UserID:      userID,
-		StoryImgUrl: req.StoryImgUrl,
-		Title:       req.Title,
-		Description: req.Description,
+func (u *InvitationUsecase) CreateStory(userID uint, req entity.StoryRequest) ([]entity.Story, *apperror.AppError) {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
-	if err := u.repo.CreateStory(&story); err != nil {
-		return nil, apperror.Internal("Failed to create story")
+	stories := make([]entity.Story, 0, len(req.Stories))
+	for _, s := range req.Stories {
+		stories = append(stories, entity.Story{
+			Order:       s.Order,
+			StoryImgUrl: req.StoryImgUrl,
+			Title:       s.Title,
+			Description: s.Description,
+		})
 	}
-	return &story, nil
-}
-
-func (u *InvitationUsecase) UpdateStory(userID, id uint, req entity.StoryRequest) (*entity.Story, *apperror.AppError) {
-	story, err := u.repo.FindStoryByID(id)
-	if err != nil {
-		return nil, mapRepoErr(err, "Story Not Found")
+	inv.Sections.Stories = stories
+	if appErr := u.save(inv, "Failed to save story"); appErr != nil {
+		return nil, appErr
 	}
-	if story.UserID != userID {
-		return nil, forbidden()
-	}
-	story.StoryImgUrl = req.StoryImgUrl
-	story.Title = req.Title
-	story.Description = req.Description
-	if err := u.repo.UpdateStory(story); err != nil {
-		return nil, apperror.Internal("Failed to update story")
-	}
-	return story, nil
-}
-
-func (u *InvitationUsecase) DeleteStory(userID, id uint) *apperror.AppError {
-	story, err := u.repo.FindStoryByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Story Not Found")
-	}
-	if story.UserID != userID {
-		return forbidden()
-	}
-	if err := u.repo.DeleteStory(id); err != nil {
-		return apperror.Internal("Failed to delete story")
-	}
-	return nil
+	return stories, nil
 }
 
 // ---------- Gift ----------
 
-func (u *InvitationUsecase) CreateGift(userID uint, req entity.GiftRequest) (*entity.Gift, *apperror.AppError) {
-	gift := entity.Gift{
-		UserID:          userID,
-		Provider:        req.Provider,
-		ProviderAccount: req.ProviderAccount,
-		Type:            req.Type,
-		No:              req.No,
+func (u *InvitationUsecase) CreateGift(userID uint, req entity.GiftRequest) ([]entity.Gift, *apperror.AppError) {
+	inv, appErr := u.invitationByUserID(userID)
+	if appErr != nil {
+		return nil, appErr
 	}
-	if err := u.repo.CreateGift(&gift); err != nil {
-		return nil, apperror.Internal("Failed to create gift")
+	gifts := make([]entity.Gift, 0, len(req.Gifts))
+	for _, g := range req.Gifts {
+		gifts = append(gifts, entity.Gift{
+			Order:           g.Order,
+			Provider:        g.Provider,
+			ProviderAccount: g.ProviderAccount,
+			Type:            g.Type,
+			No:              g.No,
+		})
 	}
-	return &gift, nil
-}
-
-func (u *InvitationUsecase) UpdateGift(userID, id uint, req entity.GiftRequest) (*entity.Gift, *apperror.AppError) {
-	gift, err := u.repo.FindGiftByID(id)
-	if err != nil {
-		return nil, mapRepoErr(err, "Gift Not Found")
+	inv.Sections.Gifts = gifts
+	if appErr := u.save(inv, "Failed to save gift"); appErr != nil {
+		return nil, appErr
 	}
-	if gift.UserID != userID {
-		return nil, forbidden()
-	}
-	gift.Provider = req.Provider
-	gift.ProviderAccount = req.ProviderAccount
-	gift.Type = req.Type
-	gift.No = req.No
-	if err := u.repo.UpdateGift(gift); err != nil {
-		return nil, apperror.Internal("Failed to update gift")
-	}
-	return gift, nil
-}
-
-func (u *InvitationUsecase) DeleteGift(userID, id uint) *apperror.AppError {
-	gift, err := u.repo.FindGiftByID(id)
-	if err != nil {
-		return mapRepoErr(err, "Gift Not Found")
-	}
-	if gift.UserID != userID {
-		return forbidden()
-	}
-	if err := u.repo.DeleteGift(id); err != nil {
-		return apperror.Internal("Failed to delete gift")
-	}
-	return nil
+	return gifts, nil
 }
 
 // ---------- Public Guest ----------
-
-// ponytail: sectionOrder/sectionEnabled masih default semua on; nanti dari kolom JSON (Step 10 belum pakai).
-var sectionOrder = []string{"opening", "invitation", "eventTime", "galery", "storySection", "gift"}
-
-func sectionEnabled() map[string]bool {
-	m := make(map[string]bool, len(sectionOrder))
-	for _, s := range sectionOrder {
-		m[s] = true
-	}
-	return m
-}
 
 func (u *InvitationUsecase) GetInvitation(id uint) (*entity.InvitationDetailResponse, *apperror.AppError) {
 	inv, err := u.repo.FindInvitationByID(id)
 	if err != nil {
 		return nil, mapRepoErr(err, "Invitation Not Found")
 	}
-	uid := inv.UserID
-
-	cover, _ := u.repo.FindCoverByUserID(uid)
-	hero, _ := u.repo.FindHeroByUserID(uid)
-	opening, _ := u.repo.FindOpeningByUserID(uid)
-	events, _ := u.repo.FindEventsByUserID(uid)
-	galleries, _ := u.repo.FindGalleriesByUserID(uid)
-	stories, _ := u.repo.FindStoriesByUserID(uid)
-	gifts, _ := u.repo.FindGiftsByUserID(uid)
+	ensureSections(&inv.Sections)
 
 	resp := entity.InvitationDetailResponse{
 		ID:             inv.ID,
@@ -386,8 +321,15 @@ func (u *InvitationUsecase) GetInvitation(id uint) (*entity.InvitationDetailResp
 		BrideDegree:    inv.BrideDegree,
 		GroomName:      inv.GroomName,
 		GroomDegree:    inv.GroomDegree,
-		SectionOrder:   sectionOrder,
-		SectionEnabled: sectionEnabled(),
+		CoverUrl:       inv.Sections.CoverUrl,
+		HeroImgUrl:     inv.Sections.HeroImgUrl,
+		SectionOrder:   inv.Sections.SectionOrder,
+		SectionEnabled: inv.Sections.SectionEnabled,
+		Opening: entity.OpeningResponse{
+			OpeningImageUrl: inv.Sections.Opening.OpeningImgUrl,
+			Title:           inv.Sections.Opening.Title,
+			Description:     inv.Sections.Opening.Description,
+		},
 		Invitation: entity.InvitationSectionResponse{
 			GroomImgUrl:      inv.GroomImgUrl,
 			BrideImgUrl:      inv.BrideImgUrl,
@@ -396,23 +338,17 @@ func (u *InvitationUsecase) GetInvitation(id uint) (*entity.InvitationDetailResp
 			GroomDescription: inv.GroomDescription,
 			BrideDescription: inv.BrideDescription,
 		},
+		EventTime: make([]entity.EventResponse, 0, len(inv.Sections.Events)),
+		Galery:    make([]entity.GalleryResponse, 0, len(inv.Sections.Galleries)),
+		StorySection: entity.StorySectionResponse{
+			Story: make([]entity.StoryEntry, 0, len(inv.Sections.Stories)),
+		},
+		Gift: make([]entity.GiftResponse, 0, len(inv.Sections.Gifts)),
 	}
 
-	if cover != nil {
-		resp.CoverUrl = cover.CoverUrl
-	}
-	if hero != nil {
-		resp.HeroImgUrl = hero.HeroImgUrl
-	}
-	if opening != nil {
-		resp.Opening = entity.OpeningResponse{
-			OpeningImageUrl: opening.OpeningImgUrl,
-			Title:           opening.Title,
-			Description:     opening.Description,
-		}
-	}
-	for _, e := range events {
+	for _, e := range inv.Sections.Events {
 		resp.EventTime = append(resp.EventTime, entity.EventResponse{
+			Order:        e.Order,
 			Title:        e.Title,
 			Location:     e.Location,
 			StartDate:    e.StartDate,
@@ -420,20 +356,25 @@ func (u *InvitationUsecase) GetInvitation(id uint) (*entity.InvitationDetailResp
 			LocationLink: e.LocationLink,
 		})
 	}
-	for _, g := range galleries {
-		resp.Galery = append(resp.Galery, g.ImageUrl)
+	for _, g := range inv.Sections.Galleries {
+		resp.Galery = append(resp.Galery, entity.GalleryResponse{
+			Order:    g.Order,
+			ImageUrl: g.ImageUrl,
+		})
 	}
-	if len(stories) > 0 {
-		resp.StorySection.StoryImgUrl = stories[0].StoryImgUrl
+	if len(inv.Sections.Stories) > 0 {
+		resp.StorySection.StoryImgUrl = inv.Sections.Stories[0].StoryImgUrl
 	}
-	for _, s := range stories {
+	for _, s := range inv.Sections.Stories {
 		resp.StorySection.Story = append(resp.StorySection.Story, entity.StoryEntry{
+			Order:       s.Order,
 			Title:       s.Title,
 			Description: s.Description,
 		})
 	}
-	for _, g := range gifts {
+	for _, g := range inv.Sections.Gifts {
 		resp.Gift = append(resp.Gift, entity.GiftResponse{
+			Order:           g.Order,
 			Provider:        g.Provider,
 			ProviderAccount: g.ProviderAccount,
 			Type:            g.Type,

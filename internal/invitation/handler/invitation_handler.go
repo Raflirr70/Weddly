@@ -92,11 +92,7 @@ func (h *InvitationHandler) CreateCover(c *gin.Context) {
 }
 
 func (h *InvitationHandler) DeleteCover(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteCover(currentUserID(c), id); appErr != nil {
+	if appErr := h.usecase.DeleteCover(currentUserID(c)); appErr != nil {
 		h.fail(c, appErr)
 		return
 	}
@@ -119,11 +115,7 @@ func (h *InvitationHandler) CreateHero(c *gin.Context) {
 }
 
 func (h *InvitationHandler) DeleteHero(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteHero(currentUserID(c), id); appErr != nil {
+	if appErr := h.usecase.DeleteHero(currentUserID(c)); appErr != nil {
 		h.fail(c, appErr)
 		return
 	}
@@ -145,29 +137,8 @@ func (h *InvitationHandler) CreateOpening(c *gin.Context) {
 	created(c, result)
 }
 
-func (h *InvitationHandler) UpdateOpening(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	var req entity.OpeningRequest
-	if !h.bind(c, "Opening Bad Request", &req) {
-		return
-	}
-	result, appErr := h.usecase.UpdateOpening(currentUserID(c), id, req)
-	if appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	success(c, result)
-}
-
 func (h *InvitationHandler) DeleteOpening(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteOpening(currentUserID(c), id); appErr != nil {
+	if appErr := h.usecase.DeleteOpening(currentUserID(c)); appErr != nil {
 		h.fail(c, appErr)
 		return
 	}
@@ -233,35 +204,6 @@ func (h *InvitationHandler) CreateEvent(c *gin.Context) {
 	created(c, result)
 }
 
-func (h *InvitationHandler) UpdateEvent(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	var req entity.EventRequest
-	if !h.bind(c, "Event Bad Request", &req) {
-		return
-	}
-	result, appErr := h.usecase.UpdateEvent(currentUserID(c), id, req)
-	if appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	success(c, result)
-}
-
-func (h *InvitationHandler) DeleteEvent(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteEvent(currentUserID(c), id); appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	deleted(c)
-}
-
 // ---------- Gallery ----------
 
 func (h *InvitationHandler) CreateGallery(c *gin.Context) {
@@ -275,18 +217,6 @@ func (h *InvitationHandler) CreateGallery(c *gin.Context) {
 		return
 	}
 	created(c, result)
-}
-
-func (h *InvitationHandler) DeleteGallery(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteGallery(currentUserID(c), id); appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	deleted(c)
 }
 
 // ---------- Story ----------
@@ -304,35 +234,6 @@ func (h *InvitationHandler) CreateStory(c *gin.Context) {
 	created(c, result)
 }
 
-func (h *InvitationHandler) UpdateStory(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	var req entity.StoryRequest
-	if !h.bind(c, "Story Bad Request", &req) {
-		return
-	}
-	result, appErr := h.usecase.UpdateStory(currentUserID(c), id, req)
-	if appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	success(c, result)
-}
-
-func (h *InvitationHandler) DeleteStory(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteStory(currentUserID(c), id); appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	deleted(c)
-}
-
 // ---------- Gift ----------
 
 func (h *InvitationHandler) CreateGift(c *gin.Context) {
@@ -346,35 +247,6 @@ func (h *InvitationHandler) CreateGift(c *gin.Context) {
 		return
 	}
 	created(c, result)
-}
-
-func (h *InvitationHandler) UpdateGift(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	var req entity.GiftRequest
-	if !h.bind(c, "Gift Bad Request", &req) {
-		return
-	}
-	result, appErr := h.usecase.UpdateGift(currentUserID(c), id, req)
-	if appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	success(c, result)
-}
-
-func (h *InvitationHandler) DeleteGift(c *gin.Context) {
-	id, ok := h.paramID(c)
-	if !ok {
-		return
-	}
-	if appErr := h.usecase.DeleteGift(currentUserID(c), id); appErr != nil {
-		h.fail(c, appErr)
-		return
-	}
-	deleted(c)
 }
 
 // ---------- Public Guest ----------

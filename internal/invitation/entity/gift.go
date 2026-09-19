@@ -1,8 +1,7 @@
 package entity
 
 type Gift struct {
-	ID              uint   `json:"id" gorm:"primaryKey"`
-	UserID          uint   `json:"userId" gorm:"not null;index"`
+	Order           int    `json:"order"`
 	Provider        string `json:"provider"`
 	ProviderAccount string `json:"providerAccount"`
 	Type            string `json:"type"`

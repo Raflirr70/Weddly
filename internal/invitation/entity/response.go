@@ -16,7 +16,7 @@ type InvitationDetailResponse struct {
 	Opening        OpeningResponse           `json:"opening"`
 	Invitation     InvitationSectionResponse `json:"invitation"`
 	EventTime      []EventResponse           `json:"eventTime"`
-	Galery         []string                  `json:"galery"`
+	Galery         []GalleryResponse         `json:"galery"`
 	StorySection   StorySectionResponse      `json:"storySection"`
 	Gift           []GiftResponse            `json:"gift"`
 }
@@ -37,11 +37,17 @@ type InvitationSectionResponse struct {
 }
 
 type EventResponse struct {
+	Order        int       `json:"order"`
 	Title        string    `json:"title"`
 	Location     string    `json:"location"`
 	StartDate    time.Time `json:"startDate"`
 	EndDate      time.Time `json:"endDate"`
 	LocationLink string    `json:"locationLink"`
+}
+
+type GalleryResponse struct {
+	Order    int    `json:"order"`
+	ImageUrl string `json:"imageUrl"`
 }
 
 type StorySectionResponse struct {
@@ -50,11 +56,13 @@ type StorySectionResponse struct {
 }
 
 type StoryEntry struct {
+	Order       int    `json:"order"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
 type GiftResponse struct {
+	Order           int    `json:"order"`
 	Provider        string `json:"provider"`
 	ProviderAccount string `json:"providerAccount"`
 	Type            string `json:"type"`

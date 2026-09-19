@@ -1,6 +1,12 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+
+	invitationEntity "github.com/Raflirr70/Weddly/internal/invitation/entity"
+)
 
 type User struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
@@ -10,6 +16,10 @@ type User struct {
 	Status    bool      `json:"status" gorm:"default:true"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+func (u *User) AfterCreate(tx *gorm.DB) error {
+	return tx.Create(&invitationEntity.Invitation{UserID: u.ID}).Error
 }
 
 type CreateUserRequest struct {
