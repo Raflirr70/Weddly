@@ -1,5 +1,7 @@
 package entity
 
 type Cover struct {
-	CoverUrl string `json:"coverUrl"`
+	ID           uint   `json:"id" gorm:"primaryKey"`
+	InvitationID uint   `json:"invitationId" gorm:"index"`
+	CoverUrl     string `json:"coverUrl"`
 }

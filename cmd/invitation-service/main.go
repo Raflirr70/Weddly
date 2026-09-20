@@ -14,6 +14,14 @@ import (
 	"github.com/Raflirr70/Weddly/pkg/kafka"
 )
 
+// @title         Weddly Invitation Service API
+// @version       1.0
+// @description   Kelola data undangan (cover, hero, opening, invitation, event, gallery, story, gift) + endpoint publik tamu.
+// @host          localhost:8080
+// @BasePath      /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in             header
+// @name           Authorization
 func main() {
 	cfg := config.LoadConfig()
 

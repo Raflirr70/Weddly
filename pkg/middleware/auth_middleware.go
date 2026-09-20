@@ -24,8 +24,12 @@ const (
 
 func AuthMiddleware(redisClient *redis.Client, jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, ok := strings.CutPrefix(c.GetHeader("Authorization"), "Bearer ")
-		if !ok || token == "" {
+		raw := c.GetHeader("Authorization")
+		token, ok := strings.CutPrefix(raw, "Bearer ")
+		if !ok {
+			token = raw
+		}
+		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response.Error(401, "Unauthorized", nil))
 			return
 		}

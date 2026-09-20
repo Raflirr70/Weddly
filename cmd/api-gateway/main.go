@@ -9,9 +9,23 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/Raflirr70/Weddly/pkg/response"
+
+	_ "github.com/Raflirr70/Weddly/docs"
 )
+
+// @title         Weddly API Gateway
+// @version       1.0
+// @description   Single entry point. Dokumentasi UI seluruh endpoint di /swagger/index.html.
+// @schemes       http
+// @host          localhost:8080
+// @BasePath      /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in             header
+// @name           Authorization
 
 func envOr(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
@@ -69,7 +83,11 @@ func main() {
 	}
 
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery(), cors(), func(c *gin.Context) {
+	r.Use(gin.Logger(), gin.Recovery(), cors())
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.NewHandler()))
+
+	r.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
 		for _, route := range routes {
 			if strings.HasPrefix(path, route.prefix) {

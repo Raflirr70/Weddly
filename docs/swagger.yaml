@@ -1,0 +1,901 @@
+basePath: /api/v1
+definitions:
+  entity.CommentRequest:
+    properties:
+      comment:
+        type: string
+      confirmAttendant:
+        type: boolean
+      username:
+        type: string
+    required:
+    - comment
+    - username
+    type: object
+  entity.CoverRequest:
+    properties:
+      coverUrl:
+        type: string
+    required:
+    - coverUrl
+    type: object
+  entity.CreateUserRequest:
+    properties:
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  entity.EventEntryRequest:
+    properties:
+      endDate:
+        type: string
+      location:
+        type: string
+      locationLink:
+        type: string
+      order:
+        type: integer
+      startDate:
+        type: string
+      title:
+        type: string
+    required:
+    - title
+    type: object
+  entity.EventRequest:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/entity.EventEntryRequest'
+        type: array
+      title:
+        type: string
+    type: object
+  entity.GalleryEntryRequest:
+    properties:
+      imageUrl:
+        type: string
+      order:
+        type: integer
+    required:
+    - imageUrl
+    type: object
+  entity.GalleryRequest:
+    properties:
+      galleries:
+        items:
+          $ref: '#/definitions/entity.GalleryEntryRequest'
+        type: array
+    type: object
+  entity.GiftEntryRequest:
+    properties:
+      "no":
+        type: string
+      order:
+        type: integer
+      provider:
+        type: string
+      providerAccount:
+        type: string
+      type:
+        type: string
+    type: object
+  entity.GiftRequest:
+    properties:
+      gifts:
+        items:
+          $ref: '#/definitions/entity.GiftEntryRequest'
+        type: array
+    type: object
+  entity.HeroRequest:
+    properties:
+      heroImgUrl:
+        type: string
+    required:
+    - heroImgUrl
+    type: object
+  entity.InvitationRequest:
+    properties:
+      brideDegree:
+        type: string
+      brideDescription:
+        type: string
+      brideImgUrl:
+        type: string
+      brideName:
+        type: string
+      description:
+        type: string
+      groomDegree:
+        type: string
+      groomDescription:
+        type: string
+      groomImgUrl:
+        type: string
+      groomName:
+        type: string
+      title:
+        type: string
+    type: object
+  entity.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  entity.OpeningRequest:
+    properties:
+      description:
+        type: string
+      openingImgUrl:
+        type: string
+      title:
+        type: string
+    type: object
+  entity.StoryEntryRequest:
+    properties:
+      description:
+        type: string
+      order:
+        type: integer
+      title:
+        type: string
+    type: object
+  entity.StoryRequest:
+    properties:
+      stories:
+        items:
+          $ref: '#/definitions/entity.StoryEntryRequest'
+        type: array
+      storyImgUrl:
+        type: string
+    type: object
+  entity.UpdateUserRequest:
+    properties:
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      error: {}
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Single entry point. Dokumentasi UI seluruh endpoint di /swagger/index.html.
+  title: Weddly API Gateway
+  version: "1.0"
+paths:
+  /cover:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Hapus cover undangan (milik user)
+      tags:
+      - Cover
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: URL cover
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CoverRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat cover undangan
+      tags:
+      - Cover
+  /event:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: List event
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.EventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat event (batch)
+      tags:
+      - Event
+  /gallery:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: List gambar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.GalleryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat gallery (batch)
+      tags:
+      - Gallery
+  /gift:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: List rekening/e-wallet
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.GiftRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat gift (batch)
+      tags:
+      - Gift
+  /hero:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Hapus hero undangan (milik user)
+      tags:
+      - Hero
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: URL gambar hero
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.HeroRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat hero undangan
+      tags:
+      - Hero
+  /invitation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Data undangan
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.InvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat undangan
+      tags:
+      - Invitation
+  /invitation/{id}:
+    delete:
+      parameters:
+      - description: Invitation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Hapus undangan
+      tags:
+      - Invitation
+    get:
+      parameters:
+      - description: Invitation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Data undangan lengkap (publik)
+      tags:
+      - Guest
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Invitation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Data undangan
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.InvitationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Update undangan
+      tags:
+      - Invitation
+  /invitation/{id}/comment:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Invitation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Isi komentar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Kirim komentar (publik)
+      tags:
+      - Guest
+  /invitation/{id}/comments:
+    get:
+      parameters:
+      - description: Invitation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: List komentar undangan (publik)
+      tags:
+      - Guest
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Username & password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Login user
+      tags:
+      - Auth
+  /logs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: List activity log
+      tags:
+      - Monitoring
+  /me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Info user login (dari token)
+      tags:
+      - Auth
+  /opening:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Hapus section opening (milik user)
+      tags:
+      - Opening
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Data opening
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.OpeningRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat section opening
+      tags:
+      - Opening
+  /story:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Gambar + list cerita
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.StoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat story (batch)
+      tags:
+      - Story
+  /user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Data user
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Buat user baru
+      tags:
+      - User
+  /user/{id}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Hapus user
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Field yang diubah
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Update user (partial)
+      tags:
+      - User
+  /users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: List semua user
+      tags:
+      - User
+  /visitors:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      summary: Statistik kunjungan per undangan
+      tags:
+      - Monitoring
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

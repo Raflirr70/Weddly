@@ -18,6 +18,15 @@ func NewAuthHandler(usecase *usecase.AuthUsecase) *AuthHandler {
 	return &AuthHandler{usecase: usecase}
 }
 
+// @Summary      Login user
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        body body entity.LoginRequest true "Username & password"
+// @Success      201 {object} response.Response
+// @Failure      400 {object} response.Response
+// @Failure      401 {object} response.Response
+// @Router       /login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req entity.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

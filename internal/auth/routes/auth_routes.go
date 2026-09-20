@@ -29,6 +29,13 @@ func (r *AuthRoutes) Register(api *gin.RouterGroup) {
 	secured.GET("/me", me)
 }
 
+// @Summary      Info user login (dari token)
+// @Tags         Auth
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200 {object} response.Response
+// @Failure      401 {object} response.Response
+// @Router       /me [get]
 func me(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success(200, "ok", gin.H{
 		"userId": c.GetUint(middleware.ContextUserID),

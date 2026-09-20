@@ -21,6 +21,14 @@ import (
 	"github.com/Raflirr70/Weddly/pkg/database"
 )
 
+// @title         Weddly Auth Service API
+// @version       1.0
+// @description   Auth, kelola user & monitoring (login, user, logs, visitors).
+// @host          localhost:8080
+// @BasePath      /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in             header
+// @name           Authorization
 func main() {
 	cfg := config.LoadConfig()
 
