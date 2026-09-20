@@ -1196,7 +1196,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "endDate": {
-                    "type": "string"
+                    "type": "2026-09-20T10:00:00Z"
                 },
                 "location": {
                     "type": "string"
@@ -1208,7 +1208,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "2026-09-20T10:00:00Z"
                 },
                 "title": {
                     "type": "string"
@@ -1334,14 +1334,14 @@ const docTemplate = `{
         "entity.LoginRequest": {
             "type": "object",
             "required": [
-                "password",
-                "username"
+                "username",
+                "password"
             ],
             "properties": {
-                "password": {
+                "username": {
                     "type": "string"
                 },
-                "username": {
+                "password": {
                     "type": "string"
                 }
             }
