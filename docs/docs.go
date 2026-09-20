@@ -661,7 +661,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
